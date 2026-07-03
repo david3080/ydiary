@@ -61,10 +61,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB0geuPZRWZQoVDh2vCcP-ZSimZHg16BW8',
-    appId: '1:1012054407867:ios:292f552331e592d487079e',
+    appId: '1:1012054407867:ios:19bb950e94903bf787079e',
     messagingSenderId: '1012054407867',
     projectId: 'ydiary-517bb',
     storageBucket: 'ydiary-517bb.firebasestorage.app',
-    iosBundleId: 'com.example.ydiary',
+    iosClientId: '1012054407867-idee53pbkvn9ugoajf3qi58d45hehfu1.apps.googleusercontent.com',
+    iosBundleId: 'jp.co.sonrisa.ydiary',
   );
 }
