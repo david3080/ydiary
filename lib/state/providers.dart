@@ -1,16 +1,76 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models.dart';
 import '../data/firestore_repo.dart';
 import '../data/seed_data.dart';
 import '../data/weather_api.dart';
 
-// --- データ源（今はシード。将来Firestoreリポジトリに差し替え） ---
-final cropsProvider = Provider<Map<String, Crop>>((ref) => kCrops);
+// --- データ源 ---
 final plantingInfoProvider =
     Provider<Map<String, PlantingInfo>>((ref) => kPlantings);
+
+/// 野菜マスタ（名前・色・絵文字）。Firestore(crops)と同期する。
+/// 追加・編集・削除は即Firestoreに書き込み、スナップショット購読が state を更新する。
+/// カスタム描画アイコン（里芋・オクラ等）はcrop.idが一致すれば自動的に使われる。
+class CropsNotifier extends Notifier<Map<String, Crop>> {
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _sub;
+
+  @override
+  Map<String, Crop> build() {
+    ref.onDispose(() => _sub?.cancel());
+    if (Firebase.apps.isNotEmpty) {
+      _sub = FirestorePaths.crops.snapshots().listen((snap) {
+        if (snap.docs.isEmpty) {
+          _seedIfEmpty();
+          return;
+        }
+        state = {
+          for (final doc in snap.docs) doc.id: cropFromDoc(doc),
+        };
+      });
+    }
+    return Map<String, Crop>.of(kCrops);
+  }
+
+  Future<void> _seedIfEmpty() async {
+    final batch = FirebaseFirestore.instance.batch();
+    for (final entry in kCrops.entries) {
+      batch.set(FirestorePaths.crops.doc(entry.key), cropToMap(entry.value));
+    }
+    await batch.commit();
+  }
+
+  /// 新規作物を追加し、そのIDを返す。
+  String add({required String name, required Color color, required String icon}) {
+    final id = 'crop_${DateTime.now().millisecondsSinceEpoch}';
+    FirestorePaths.crops
+        .doc(id)
+        .set(cropToMap(Crop(id: id, name: name, color: color, icon: icon)));
+    return id;
+  }
+
+  void update(String id, {String? name, Color? color, String? icon}) {
+    final current = state[id];
+    if (current == null) return;
+    final next = Crop(
+      id: id,
+      name: name ?? current.name,
+      color: color ?? current.color,
+      icon: icon ?? current.icon,
+    );
+    FirestorePaths.crops.doc(id).set(cropToMap(next));
+  }
+
+  void remove(String id) {
+    FirestorePaths.crops.doc(id).delete();
+  }
+}
+
+final cropsProvider =
+    NotifierProvider<CropsNotifier, Map<String, Crop>>(CropsNotifier.new);
 
 /// 区画一覧（可変）。Firestore(users/{uid}/plots)と同期する。
 /// 追加・リネーム・リサイズ・マス塗替えは即Firestoreに書き込み、

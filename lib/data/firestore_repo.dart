@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart' show Color;
 import '../domain/models.dart';
 
 /// 家族など許可されたユーザー全員で共有する、トップレベルのコレクション参照。
@@ -9,6 +10,9 @@ class FirestorePaths {
 
   static CollectionReference<Map<String, dynamic>> get events =>
       FirebaseFirestore.instance.collection('events');
+
+  static CollectionReference<Map<String, dynamic>> get crops =>
+      FirebaseFirestore.instance.collection('crops');
 }
 
 // --- Plot <-> Firestore ---
@@ -37,6 +41,24 @@ Plot plotFromDoc(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
     cols: cols,
     rows: rows,
     cells: cells,
+  );
+}
+
+// --- Crop <-> Firestore ---
+
+Map<String, dynamic> cropToMap(Crop c) => {
+      'name': c.name,
+      'color': c.color.toARGB32(),
+      'icon': c.icon,
+    };
+
+Crop cropFromDoc(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+  final d = doc.data();
+  return Crop(
+    id: doc.id,
+    name: d['name'] as String? ?? '',
+    color: Color((d['color'] as num).toInt()),
+    icon: d['icon'] as String? ?? '🌱',
   );
 }
 

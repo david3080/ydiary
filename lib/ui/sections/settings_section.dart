@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/seed_data.dart';
+import '../crop_editor_page.dart';
 import '../icon_preview_page.dart';
 import '../widgets/section_header.dart';
 
@@ -15,6 +16,15 @@ class SettingsSection extends StatelessWidget {
         Expanded(
           child: ListView(
             children: [
+              ListTile(
+                leading: const Icon(Icons.eco_outlined),
+                title: const Text('野菜マスタ'),
+                subtitle: const Text('野菜の追加・編集・削除'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CropEditorPage()),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.image_outlined),
                 title: const Text('アイコンプレビュー'),

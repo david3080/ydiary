@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../domain/models.dart';
 
-/// 野菜マスタ（現況で確定した18種）。
+/// 野菜マスタ（現況で確定した19種）。
 const kCrops = <String, Crop>{
+  'parsley': Crop(id: 'parsley', name: 'パセリ', color: Color(0xFF3F8F4A), icon: '🌿'),
   'tomato': Crop(id: 'tomato', name: 'ミニトマト', color: Color(0xFFE5544B), icon: '🍅'),
   'cucumber': Crop(id: 'cucumber', name: '胡瓜', color: Color(0xFF7CAE4A), icon: '🥒'),
   'eggplant': Crop(id: 'eggplant', name: '茄子', color: Color(0xFF7D5BA6), icon: '🍆'),

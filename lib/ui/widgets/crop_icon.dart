@@ -13,6 +13,7 @@ const _painted = {
   'negi',
   'kyonegi',
   'nira',
+  'parsley',
 };
 
 Offset _quadPoint(Offset a, Offset b, Offset e, double t) => Offset(
@@ -134,6 +135,78 @@ class _CropIconPainter extends CustomPainter {
           }
           c.restore();
           c.drawPath(p, line(strokeCol, 1.8));
+        }
+        break;
+
+      case 'parsley': // パセリ: 縮れ葉のクラスターが束になったブーケ状
+        {
+          final stemCol = Color.lerp(color, Colors.white, 0.35)!;
+          final dark2 = Color.lerp(color, Colors.black, 0.3)!;
+
+          Path frillyBlob(double r) {
+            const bumps = 7.0;
+            const amp = 0.32;
+            const samples = 32;
+            final p = Path();
+            for (var i = 0; i <= samples; i++) {
+              final t = i / samples * 2 * math.pi;
+              final rad = r * (1 + amp * math.cos(bumps * t));
+              final x = rad * math.cos(t);
+              final y = rad * math.sin(t);
+              if (i == 0) {
+                p.moveTo(x * k, y * k);
+              } else {
+                p.lineTo(x * k, y * k);
+              }
+            }
+            p.close();
+            return p;
+          }
+
+          void cluster(double len, double r) {
+            c.drawLine(Offset(0, 0), Offset(0, -len * k), line(stemCol, 1.2));
+            const spread = [
+              (0.0, 0.0, 1.0),
+              (-0.75, 0.35, 0.72),
+              (0.75, 0.35, 0.72),
+              (-0.35, -0.55, 0.6),
+              (0.35, -0.55, 0.6),
+            ];
+            for (final (dx, dy, scale) in spread) {
+              c.save();
+              c.translate(dx * r * k, -len * k + dy * r * k);
+              final blob = frillyBlob(r * scale);
+              c.drawPath(blob, fill(color));
+              c.drawPath(blob, line(dark2, 1.0));
+              c.restore();
+            }
+          }
+
+          // (角度, 長さ, クラスター半径)
+          const leaves = [
+            [-38.0, 15.0, 5.0],
+            [-18.0, 20.0, 6.0],
+            [0.0, 23.0, 6.5],
+            [18.0, 20.0, 6.0],
+            [38.0, 15.0, 5.0],
+          ];
+          final base = o(24, 42);
+          for (final leafDef in leaves) {
+            c.save();
+            c.translate(base.dx, base.dy);
+            c.rotate(leafDef[0] * math.pi / 180);
+            cluster(leafDef[1], leafDef[2]);
+            c.restore();
+          }
+
+          // 茎（束になって根元に集まる）
+          for (final dx in [-2.0, 0.0, 2.5]) {
+            final p = Path()
+              ..moveTo(base.dx + dx * k, base.dy)
+              ..quadraticBezierTo(o(24, 45).dx, o(24, 45).dy, o(24, 47).dx,
+                  o(24, 47).dy);
+            c.drawPath(p, line(stemCol, 1.6));
+          }
         }
         break;
 
